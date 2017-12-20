@@ -13,7 +13,7 @@ console.log('Running now');
 
 var redirect_uri = process.env.REDIRECT;
 var spotify_secret = process.env.SECRET;
-var client_id = pross.enc.CLIENTID;
+var client_id = process.env.CLIENTID;
 
 app.set('port', (process.env.PORT || 5000));
 app.use(express.static(__dirname + '/public'));
