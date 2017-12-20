@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Web Playback SDK Quick Start Tutorial</title>
+</head>
+
+<body>
+    <h1><%= token %> Spotify Web Playback SDK Quick Start Tutorial</h1>
+    <h2>Open your console log:
+        <code>View > Developer > JavaScript Console</code>
+    </h2>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous"></script>
+    <script>
+        const token = 'BQD5AfK6gdC0-iigfkQWzt2d6eqUatzr2R2d_zttP7eXUiOidkEGaNu1D33DiL3IuRzwuUTJEUdXpvsC7lDNACWDWpjtn98a6bS_7bnxxIk6uDZRsVpoDgLKScourkwA7ivPZL2Hy2UKQOYg5FoLDEnOaxYuA4g';
+        var timeout = 30;
+
+        function startSambaTimer() {
+            timeout--;
+
+            console.log(timeout);
+
+            if (timeout == 0) {
+                samba();
+            }
+
+            if (timeout > 0) { setTimeout(startSambaTimer, 1000); }
+        }
+
+        function samba() {
+
+            $.ajax({
+                url: 'https://api.spotify.com/v1/me/player/play',
+                method: 'PUT',
+                data: JSON.stringify({ "uris": ["spotify:track:799NlfKuYQ1X3IZ6D6jO5C"] }),
+                headers: { Authorization: 'Bearer <%= token %>' },
+                complete: function (result) {
+                    console.log(result);
+                }
+            });
+        }
+
+
+        $(document).ready(function () {
+            console.log("ready!");
+            startSambaTimer();
+        });
+    </script>
+</body>
+
+</html>

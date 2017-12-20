@@ -1,0 +1,30 @@
+{
+  "name": "pomodoro-de-janeiro",
+  "version": "0.0.1",
+  "description": "Pomodoro application for Spotify API",
+  "engines": {
+    "node": "6.11.1"
+  },
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "ejs": "2.4.1",
+    "express": "4.13.3",
+    "xmlhttprequest" : "latest",
+    "utf8"          : "latest",
+    "dateformat"    : "latest",
+    "node-env-file" : "latest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joppefi"
+  },
+  "keywords": [
+    "node",
+    "heroku",
+    "express"
+  ],
+  "license": "MIT"
+}
