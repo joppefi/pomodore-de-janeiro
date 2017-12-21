@@ -28,8 +28,11 @@ app.get('/', function (req, res) {
   if (req.query.code != undefined) {
     getAccessToken(req.query.code, function (auth) {
       console.log('cb', auth["access_token"]);
-      res.render('pages/player', {token: auth.access_token});
-    });
+      res.render('pages/player', auth);
+    },
+  function () {
+    res.send('Server could not fetch access token.');
+  });
   } else {
     res.send('kukkuu');
   }
@@ -38,7 +41,7 @@ app.get('/', function (req, res) {
 
 /// Handle the login
 app.get('/login', function (req, res) {
-  var scopes = 'user-read-private user-read-email streaming';
+  var scopes = 'user-read-private user-read-email streaming playlist-read-private';
   res.redirect('https://accounts.spotify.com/authorize' +
     '?response_type=code' +
     '&client_id=' + client_id +
@@ -66,14 +69,19 @@ app.post('/', function (request, response) {
 });
 
 // Gets the access token for desired code
-function getAccessToken(code, callback) {
+function getAccessToken(code, success, fail) {
   var xhr = new XMLHttpRequest();
   xhr.open('POST', 'https://accounts.spotify.com/api/token', false);
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
   xhr.setRequestHeader('Authorization', 'Basic ' + spotify_secret);
   xhr.onload = function () {
+    console.log(this);
     console.log('ResponseText', this.responseText);
-    callback(JSON.parse(this.responseText));
+    if(this.status == 200) {
+      success(JSON.parse(this.responseText));
+    } else {
+      fail();
+    }
   };
 
   xhr.send('grant_type=authorization_code&code='+ code +'&redirect_uri=' + redirect_uri);
