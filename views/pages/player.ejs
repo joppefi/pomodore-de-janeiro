@@ -41,6 +41,8 @@
                         complete: function (result) {
                             console.log(result);
                             createTimer(duration, function () {
+                                shuffle();
+
                                 $.ajax({
                                     url: 'https://api.spotify.com/v1/me/player/play',
                                     method: 'PUT',
@@ -51,6 +53,7 @@
                                         createTimer(1500000, samba);
                                     }
                                 });
+
                             });
                         }
                     });
@@ -64,6 +67,18 @@
             $.ajax({
                 url: 'https://api.spotify.com/v1/me/playlists?limit=50',
                 method: 'GET',
+                headers: { Authorization: 'Bearer <%= access_token %>' },
+                complete: function (result) {
+                    console.log(result);
+                }
+            });
+        }
+
+        function shuffle() {
+
+            $.ajax({
+                url: 'https://api.spotify.com/v1/me/player/shuffle?state=true',
+                method: 'PUT',
                 headers: { Authorization: 'Bearer <%= access_token %>' },
                 complete: function (result) {
                     console.log(result);
