@@ -18,6 +18,9 @@
         crossorigin="anonymous"></script>
     <script>
 
+        var refreshtoken = '<%= authentication.refresh_token %>';
+        var accesstoken = '<%= authentication.access_token %>';
+
         var countDownDate;
 
         function samba() {
@@ -28,7 +31,7 @@
             $.ajax({
                 url: 'https://api.spotify.com/v1/audio-features/' + songUri,
                 method: 'GET',
-                headers: { Authorization: 'Bearer <%= access_token %>' },
+                headers: { Authorization: 'Bearer ' + accesstoken },
                 complete: function (result) {
                     var duration = result.responseJSON.duration_ms;
                     console.log(duration);
@@ -36,7 +39,7 @@
                     $.ajax({
                         url: 'https://api.spotify.com/v1/me/player/play',
                         method: 'PUT',
-                        headers: { Authorization: 'Bearer <%= access_token %>' },
+                        headers: { Authorization: 'Bearer ' + accesstoken },
                         data: JSON.stringify({ "uris": ["spotify:track:" + songUri] }),
                         complete: function (result) {
                             console.log(result);
@@ -46,7 +49,7 @@
                                 $.ajax({
                                     url: 'https://api.spotify.com/v1/me/player/play',
                                     method: 'PUT',
-                                    headers: { Authorization: 'Bearer <%= access_token %>' },
+                                    headers: { Authorization: 'Bearer ' + accesstoken },
                                     data: JSON.stringify({ "context_uri": "spotify:user:ulyssestone:playlist:1sK57sqzJaO2ZxilXD2KRw" }),
                                     complete: function (result) {
                                         console.log(result);
@@ -63,11 +66,10 @@
         }
 
         function playlists() {
-
             $.ajax({
                 url: 'https://api.spotify.com/v1/me/playlists?limit=50',
                 method: 'GET',
-                headers: { Authorization: 'Bearer <%= access_token %>' },
+                headers: { Authorization: 'Bearer ' + accesstoken },
                 complete: function (result) {
                     console.log(result);
                 }
@@ -75,13 +77,26 @@
         }
 
         function shuffle() {
-
             $.ajax({
                 url: 'https://api.spotify.com/v1/me/player/shuffle?state=true',
                 method: 'PUT',
-                headers: { Authorization: 'Bearer <%= access_token %>' },
+                headers: { Authorization: 'Bearer ' + accesstoken },
                 complete: function (result) {
                     console.log(result);
+                }
+            });
+        }
+
+        function refreshToken() {
+            $.ajax({
+                url: '/refresh',
+                method: 'POST',
+                headers: { Authorization: 'Bearer ' + accesstoken },
+                data: JSON.stringify({ refresh_token: refreshtoken }),
+                complete: function (result) {
+                    console.log('Refreshed token');
+                    accesstoken = result.responseJSON.access_token;
+                    setTimeout(refreshToken, result.responseJSON.expires_in * 1000);
                 }
             });
         }
@@ -115,6 +130,7 @@
             console.log("ready!");
             playlists();
             createTimer(1500000, samba);
+            setTimeout(refreshToken, 3600 * 1000);
         });
     </script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
