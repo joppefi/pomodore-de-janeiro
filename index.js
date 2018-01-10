@@ -5,7 +5,7 @@ var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 var utf8 = require('utf8');
 var dateFormat = require('dateformat');
 
-if(process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== "production") {
   env(__dirname + '/.env');
 }
 
@@ -28,11 +28,14 @@ app.get('/', function (req, res) {
   if (req.query.code != undefined) {
     getAccessToken(req.query.code, function (auth) {
       console.log('cb', auth["access_token"]);
-      res.render('pages/player', auth);
+      res.render('pages/player', {
+        authentication: auth,
+        authstring: JSON.stringify(auth)
+      });
     },
-  function () {
-    res.send('Server could not fetch access token.');
-  });
+      function () {
+        res.send('Server could not fetch access token.');
+      });
   } else {
     res.send('kukkuu');
   }
@@ -49,20 +52,39 @@ app.get('/login', function (req, res) {
     '&redirect_uri=' + encodeURIComponent(redirect_uri));
 });
 
+app.post('/refresh', function (req, res) {
+  // Pitäsköhän tässä olla joku cross origin juttu?
+  console.log('refresh');
+
+  var bodyStr = '';
+
+  req.on("data", function (chunk) {
+    bodyStr += chunk.toString();
+  });
+
+  req.on("end", function () {
+    var update = JSON.parse(bodyStr);
+    getRefreshToken(update.refresh_token, function (data) {
+      res.status(200).send(data)
+    });
+  
+  });
+});
+
 
 app.listen(app.get('port'), function () {
   console.log('Node app is running on port', app.get('port'));
 });
 
-app.post('/', function (request, response) {
+app.post('/', function (req, res) {
   console.log('POST');
   var bodyStr = '';
 
-  request.on("data", function (chunk) {
+  req.on("data", function (chunk) {
     bodyStr += chunk.toString();
   });
 
-  request.on("end", function () {
+  req.on("end", function () {
     var update = JSON.parse(bodyStr);
     console.log(update);
   });
@@ -77,12 +99,31 @@ function getAccessToken(code, success, fail) {
   xhr.onload = function () {
     console.log(this);
     console.log('ResponseText', this.responseText);
-    if(this.status == 200) {
+    if (this.status == 200) {
       success(JSON.parse(this.responseText));
     } else {
       fail();
     }
   };
 
-  xhr.send('grant_type=authorization_code&code='+ code +'&redirect_uri=' + redirect_uri);
+  xhr.send('grant_type=authorization_code&code=' + code + '&redirect_uri=' + redirect_uri);
+}
+
+// Refreshes the access token
+function getRefreshToken(refreshtoken, success, fail) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', 'https://accounts.spotify.com/api/token', false);
+  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  xhr.setRequestHeader('Authorization', 'Basic ' + spotify_secret);
+  xhr.onload = function () {
+    console.log(this);
+    console.log('ResponseText', this.responseText);
+    if (this.status == 200) {
+      success(JSON.parse(this.responseText));
+    } else {
+      fail();
+    }
+  };
+
+  xhr.send('grant_type=refresh_token&refresh_token=' + refreshtoken );
 }
